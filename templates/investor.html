@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import avatar, startup_tile %}
+{% block title %}{{ investor.name }}{% endblock %}
+{% block head %}
+<style>
+.investor-profile-bg{min-height:calc(100vh - 140px);background:radial-gradient(ellipse at 8% 0%,#dcecff 0,transparent 32%),radial-gradient(ellipse at 92% 10%,#d8f7eb 0,transparent 30%),linear-gradient(180deg,#f7faff,#f0f5fc)}
+.investor-hero{position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(125deg,#0c1b3a,#173d67 52%,#0b766d);border-radius:26px;color:#fff;box-shadow:0 24px 70px #0b21401f}
+.investor-hero:before{content:"";position:absolute;z-index:-1;width:520px;height:520px;right:-100px;top:-330px;border:1px solid #ffffff35;border-radius:42%;transform:rotate(28deg);box-shadow:0 0 0 32px #ffffff0b,0 0 0 64px #ffffff08}
+.investor-panel{background:#ffffffed;border:1px solid #dce5f1;border-radius:20px;box-shadow:0 12px 36px #1632520a}
+.investor-kpi{background:linear-gradient(145deg,#f8fbff,#eef5ff);border:1px solid #e1eaf6;border-radius:16px}
+@media(max-width:700px){.investor-hero{border-radius:18px;padding:20px!important}.investor-panel{border-radius:16px}.investor-layout{padding-left:14px!important;padding-right:14px!important}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="investor-profile-bg">
+<div class="max-w-7xl mx-auto px-6 py-8 investor-layout">
+  <nav class="text-sm text-slate-500 mb-4"><a href="{{ url_for('main.investors') }}" class="hover:text-brand-blue">Investors</a> / {{ investor.name }}</nav>
+  <div class="grid lg:grid-cols-[1fr_340px] gap-8">
+    <div class="space-y-6">
+      <div class="investor-hero p-7 md:p-9 flex flex-col md:flex-row gap-6 items-start md:items-center">
+        <div class="rounded-full p-1 bg-white/15 border border-white/30 shadow-xl">{{ avatar(investor, 104) }}</div>
+        <div class="min-w-0 flex-1">
+          <p class="text-[11px] uppercase tracking-[.22em] font-bold text-emerald-200 mb-2">Investor profile</p>
+          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">{{ investor.name }}</h1>
+          <p class="text-white/80 mt-2">{{ investor.title or 'Investor' }}{% if investor.firm %} · {{ investor.firm }}{% endif %}</p>
+          <p class="text-sm text-white/75 mt-1">⌖ {{ investor.location or 'Location not listed' }}</p>
+          <p class="mt-4 text-white/85 leading-relaxed max-w-3xl">{{ investor.bio or 'This investor has not added a detailed biography yet.' }}</p>
+        </div>
+        <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm p-4 min-w-[180px]">
+          <div class="text-xs text-white/70">Typical cheque range</div>
+          <div class="font-extrabold text-lg mt-1">{{ investor.ticket_min | crore }}</div>
+          <div class="text-xs text-white/70 my-1">to</div>
+          <div class="font-extrabold text-lg">{{ investor.ticket_max | crore }}</div>
+        </div>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-3">
+        <div class="investor-kpi p-4"><div class="text-xs text-slate-500">Firm / platform</div><div class="font-bold mt-1">{{ investor.firm or 'Independent investor' }}</div></div>
+        <div class="investor-kpi p-4"><div class="text-xs text-slate-500">Based in</div><div class="font-bold mt-1">{{ investor.location or 'Not listed' }}</div></div>
+        <div class="investor-kpi p-4"><div class="text-xs text-slate-500">On INVEST since</div><div class="font-bold mt-1">{{ investor.created_at.strftime('%b %Y') if investor.created_at else 'Not listed' }}</div></div>
+      </div>
+      <section class="investor-panel p-6 md:p-7">
+        <p class="text-xs uppercase tracking-[.18em] font-bold text-blue-700">Founder briefing</p>
+        <h2 class="text-xl font-extrabold mt-2">What to know before you reach out</h2>
+        <p class="text-sm text-slate-500 mt-2 leading-relaxed">A strong introduction connects your company's stage, traction and funding goals to this investor's mandate. Confirm fit before sharing confidential information.</p>
+        {% set focus = investor.sector_list() %}
+        <div class="rounded-xl border border-blue-100 bg-blue-50/70 p-4 mt-5">
+          <div class="text-xs uppercase tracking-wider font-bold text-blue-800">Investment thesis</div>
+          <p class="text-sm text-slate-700 mt-2 leading-relaxed">{% if focus %}Focus areas listed by this investor: {{ focus|join(', ') }}. Use this as an initial fit check and confirm the current mandate directly.{% else %}No investment focus has been listed yet. Ask about sector, stage and geography before sharing a pitch deck.{% endif %}</p>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3 mt-5">
+          <div class="rounded-xl bg-slate-50 border border-slate-100 p-4"><div class="text-xs text-slate-500">Investment range</div><div class="font-bold mt-1">{{ investor.ticket_min | crore }} – {{ investor.ticket_max | crore }}</div><div class="text-xs text-slate-500 mt-1">Use this to assess cheque-size fit</div></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-100 p-4"><div class="text-xs text-slate-500">Firm / platform</div><div class="font-bold mt-1">{{ investor.firm or 'Independent investor' }}</div><div class="text-xs text-slate-500 mt-1">Clarify decision process and timeline</div></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-100 p-4"><div class="text-xs text-slate-500">Your first message</div><div class="font-bold mt-1">Problem · traction · ask</div><div class="text-xs text-slate-500 mt-1">Keep it concise and specific</div></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-100 p-4"><div class="text-xs text-slate-500">Before sharing a deck</div><div class="font-bold mt-1">Verify fit and confidentiality</div><div class="text-xs text-slate-500 mt-1">Share only appropriate, non-sensitive material first</div></div>
+        </div>
+      </section>
+      <section class="investor-panel p-6 md:p-7">
+        <h2 class="text-lg font-extrabold">Investor background</h2>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">{{ investor.bio or 'This investor has not added a detailed biography yet.' }}</p>
+        <div class="grid sm:grid-cols-2 gap-4 mt-5 text-sm"><div><span class="text-slate-400 block text-xs">Location</span><strong>{{ investor.location or 'Not listed' }}</strong></div><div><span class="text-slate-400 block text-xs">Professional role</span><strong>{{ investor.title or 'Investor' }}</strong></div><div><span class="text-slate-400 block text-xs">Investment range</span><strong>{{ investor.ticket_min | crore }} – {{ investor.ticket_max | crore }}</strong></div><div><span class="text-slate-400 block text-xs">Profile active since</span><strong>{{ investor.created_at.strftime('%B %Y') if investor.created_at else 'Not listed' }}</strong></div></div>
+      </section>
+    </div>
+    <aside class="investor-panel p-6 h-fit space-y-4 text-sm">
+      <h2 class="font-bold text-base">Investment profile</h2>
+      <div><p class="text-xs text-slate-400">Ticket size</p><p class="font-semibold">{{ investor.ticket_min | crore }} to {{ investor.ticket_max | crore }}</p></div>
+      <div><p class="text-xs text-slate-400">Firm</p><p class="font-semibold">{{ investor.firm or 'Not listed' }}</p></div>
+      <div><p class="text-xs text-slate-400">Member since</p><p class="font-semibold">{{ investor.created_at.strftime('%B %Y') if investor.created_at else 'Not listed' }}</p></div>
+      {% if current_user.is_authenticated and current_user.role == 'founder' %}
+        <a href="{{ url_for('messages.thread', uid=investor.id) }}" class="block text-center bg-brand-blue text-white rounded-lg py-2.5 font-semibold hover:bg-blue-700">Message investor</a>
+      {% elif not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.login', next=request.path) }}" class="block text-center bg-brand-blue text-white rounded-lg py-2.5 font-semibold hover:bg-blue-700">Log in to message</a>
+      {% endif %}
+      {% if current_user.is_authenticated and current_user.id == investor.id %}
+        <a href="{{ url_for('account.profile') }}" class="block text-center border border-slate-300 rounded-lg py-2.5 font-semibold hover:bg-slate-50">Edit my profile</a>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+</div>\n{% endblock %}

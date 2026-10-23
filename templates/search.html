@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import startup_row, startup_tile, pager, empty %}
+{% block title %}Startups{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+  <nav class="text-sm text-slate-500 mb-4"><a href="{{ url_for('main.home') }}" class="hover:text-brand-blue">Home</a> / Search results</nav>
+  <div class="grid md:grid-cols-[260px_1fr] gap-6">
+    <form method="get" class="bg-white rounded-xl border border-slate-200 p-5 h-fit space-y-5 text-sm md:sticky md:top-4">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold">Filters</h2>
+        <a href="{{ url_for('main.search') }}" class="text-xs font-semibold text-brand-blue">Clear all</a>
+      </div>
+      <input type="hidden" name="q" value="{{ q }}">
+      <input type="hidden" name="view" value="{{ view }}">
+      <div>
+        <label class="font-semibold block mb-1.5">Sector</label>
+        <select name="category" class="w-full border border-slate-300 rounded-lg px-2.5 py-2">
+          <option value="">All sectors</option>
+          {% for c in categories %}<option value="{{ c }}" {{ 'selected' if category == c }}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="font-semibold block mb-1.5">Funding stage</label>
+        <select name="stage" class="w-full border border-slate-300 rounded-lg px-2.5 py-2">
+          <option value="">Any stage</option>
+          {% for s in stages %}<option {{ 'selected' if stage == s }}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="font-semibold block mb-1.5">Annual profit</label>
+        <select name="profit" class="w-full border border-slate-300 rounded-lg px-2.5 py-2">
+          {% for v, l in [('', 'Any'), ('lt1', 'Under ₹1 Cr'), ('1-10', '₹1 Cr to ₹10 Cr'), ('10-50', '₹10 Cr to ₹50 Cr'), ('gt50', 'Over ₹50 Cr')] %}
+            <option value="{{ v }}" {{ 'selected' if profit == v }}>{{ l }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="font-semibold block mb-1.5">City</label>
+        <input name="location" value="{{ location }}" placeholder="For example Pune" class="w-full border border-slate-300 rounded-lg px-2.5 py-2">
+      </div>
+      <button class="w-full bg-brand-blue text-white font-semibold rounded-lg py-2.5 hover:bg-blue-700">Apply filters</button>
+    </form>
+
+    <section>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div>
+          <h1 class="text-xl font-bold">{% if q %}Results for “{{ q }}”{% elif category %}{{ category }}{% else %}All startups{% endif %}</h1>
+          <p class="text-sm text-slate-500">Showing {{ results.items | length }} of {{ results.total }} startups</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <form method="get" class="flex items-center gap-2 text-sm">
+            {% for k, v in qargs.items() if k != 'sort' %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+            <label class="text-slate-500">Sort by</label>
+            <select name="sort" onchange="this.form.submit()" class="border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white">
+              {% for v, l in [('relevant', 'Most relevant'), ('value', 'Market value'), ('profit', 'Annual profit'), ('growth', 'Growth'), ('newest', 'Newest')] %}
+                <option value="{{ v }}" {{ 'selected' if sort == v }}>{{ l }}</option>{% endfor %}
+            </select>
+          </form>
+          <div class="flex border border-slate-300 rounded-lg overflow-hidden bg-white">
+            <a href="{{ url_for('main.search', **dict(qargs, view='list')) }}" class="px-2.5 py-1.5 {{ 'bg-slate-100' if view == 'list' }}" title="List view">{{ icon('list', 'w-4 h-4') }}</a>
+            <a href="{{ url_for('main.search', **dict(qargs, view='grid')) }}" class="px-2.5 py-1.5 border-l border-slate-300 {{ 'bg-slate-100' if view == 'grid' }}" title="Grid view">{{ icon('grid', 'w-4 h-4') }}</a>
+          </div>
+        </div>
+      </div>
+
+      {% if view == 'grid' %}
+        <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {% for c in results.items %}{{ startup_tile(c) }}{% else %}{{ empty('No startups match these filters. Try clearing one of them.') }}{% endfor %}
+        </div>
+      {% else %}
+        <div class="space-y-4">
+          {% for c in results.items %}{{ startup_row(c) }}{% else %}{{ empty('No startups match these filters. Try clearing one of them.') }}{% endfor %}
+        </div>
+      {% endif %}
+
+      {{ pager(results, 'main.search', qargs) }}
+    </section>
+  </div>
+</div>
+{% endblock %}

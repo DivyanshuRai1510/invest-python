@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import product_card, startup_tile, event_row %}
+{% block title %}Discover | INVEST{% endblock %}
+{% block head %}
+<style>
+.invest-home{overflow:hidden;background:#07142e;color:#fff;position:relative;isolation:isolate}
+.invest-home:before{content:"";position:absolute;inset:-30% -10% auto 30%;height:700px;background:radial-gradient(ellipse,rgba(35,104,255,.42),transparent 62%);z-index:-1;animation:glowDrift 12s ease-in-out infinite alternate}
+.invest-home:after{content:"";position:absolute;right:-12rem;top:5rem;width:36rem;height:36rem;border:1px solid #ffffff22;border-radius:50%;box-shadow:0 0 0 42px #ffffff08,0 0 0 88px #ffffff06;z-index:-1;animation:orbit 42s linear infinite}
+.home-grid{background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent)}
+.glass-panel{background:linear-gradient(145deg,#ffffff20,#ffffff08);border:1px solid #ffffff2a;box-shadow:0 25px 80px #0005;backdrop-filter:blur(18px)}
+.orbit-stage{height:410px;position:relative;perspective:1000px}
+.orbit-core{position:absolute;width:230px;height:230px;left:50%;top:48%;transform:translate(-50%,-50%) rotateX(12deg);border-radius:50%;background:radial-gradient(circle at 30% 25%,#8bc5ff,#2463eb 42%,#101f52 75%);box-shadow:inset -20px -22px 50px #07142e,0 0 90px #2563eb66,0 30px 80px #0007}
+.orbit-core:before,.orbit-core:after{content:"";position:absolute;inset:18px -28px;border:1px solid #9dc6ff99;border-radius:50%;transform:rotate(-28deg)}
+.orbit-core:after{inset:-22px 30px;transform:rotate(56deg)}
+.float-node{position:absolute;min-width:170px;padding:14px;border-radius:15px;animation:floatNode 6s ease-in-out infinite}
+.float-node:nth-child(2){top:18px;left:2%;animation-delay:-1s}.float-node:nth-child(3){top:100px;right:0;animation-delay:-3s}.float-node:nth-child(4){bottom:12px;left:14%;animation-delay:-2s}
+.mini-avatar{width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #ffffffaa}
+.home-stat{border-left:1px solid #ffffff28;padding-left:18px}
+.reveal{animation:revealUp .8s cubic-bezier(.2,.8,.2,1) both}
+.reveal-delay{animation-delay:.14s}.reveal-delay2{animation-delay:.28s}
+@keyframes floatNode{0%,100%{translate:0 0}50%{translate:0 -12px}}
+@keyframes orbit{to{transform:rotate(360deg)}}
+@keyframes glowDrift{to{transform:translate(-5%,7%) scale(1.12)}}
+@keyframes revealUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){.orbit-stage{height:300px;margin-top:1rem}.orbit-core{width:155px;height:155px}.float-node{min-width:135px;padding:10px;font-size:12px}.float-node:nth-child(2){left:0;top:8px}.float-node:nth-child(3){right:0;top:74px}.float-node:nth-child(4){left:4%;bottom:4px}.home-stat{padding-left:10px}.invest-home:after{width:22rem;height:22rem;right:-16rem}}
+@media(prefers-reduced-motion:reduce){.invest-home:before,.invest-home:after,.float-node,.reveal{animation:none}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="invest-home">
+  <div class="home-grid absolute inset-0 -z-10"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 pt-12 md:pt-20 pb-14 md:pb-20">
+    <div class="grid lg:grid-cols-[1.02fr_.98fr] gap-8 lg:gap-14 items-center">
+      <div class="reveal">
+        <div class="inline-flex items-center gap-2 rounded-full border border-blue-200/25 bg-white/5 px-3 py-1.5 text-xs text-blue-100 tracking-wide"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> INDIA'S STARTUP & CAPITAL NETWORK</div>
+        <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.04]">Good ideas need<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-cyan-200 to-white">the right people.</span></h1>
+        <p class="mt-6 max-w-xl text-base sm:text-lg leading-8 text-slate-300">A place for founders to present real businesses, for investors to evaluate opportunities, and for both sides to build the relationships that move companies forward.</p>
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+          <a href="{{ url_for('main.search') }}" class="group inline-flex justify-center items-center gap-3 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold px-6 py-3.5 shadow-lg shadow-blue-950/40">Explore startups <span class="transition-transform group-hover:translate-x-1">→</span></a>
+          <a href="{{ url_for('company.new') }}" class="inline-flex justify-center items-center rounded-xl border border-white/25 hover:bg-white/10 px-6 py-3.5 font-semibold text-white">Present your company</a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-10 pt-6 border-t border-white/15">
+          {% for label, val in [('Startups', stats.startups), ('Investors', stats.investors), ('Products', stats.products), ('Events', stats.events)] %}
+          <div class="home-stat"><div class="text-2xl sm:text-3xl font-extrabold">{{ val }}</div><div class="text-xs text-slate-400 mt-1">{{ label }}</div></div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="orbit-stage reveal reveal-delay">
+        <div class="orbit-core"></div>
+        <div class="float-node glass-panel">
+          <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-[10px] uppercase tracking-widest text-blue-100">Founder spotlight</span></div>
+          <p class="font-bold mt-2">Build something that matters.</p><p class="text-xs text-slate-300 mt-1">Products · traction · vision</p>
+        </div>
+        <div class="float-node glass-panel">
+          <div class="text-[10px] uppercase tracking-widest text-blue-100">Investor network</div><p class="font-bold mt-2">Capital meets conviction.</p><p class="text-xs text-slate-300 mt-1">Thesis · stage · geography</p>
+        </div>
+        <div class="float-node glass-panel">
+          <div class="text-[10px] uppercase tracking-widest text-blue-100">Direct connection</div><p class="font-bold mt-2">Move beyond the pitch.</p><p class="text-xs text-slate-300 mt-1">Conversations that count</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="max-w-7xl mx-auto px-5 sm:px-8 py-12 md:py-16">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
+    <div><p class="text-xs font-bold tracking-[.18em] text-blue-700 uppercase">Explore the ecosystem</p><h2 class="text-2xl md:text-3xl font-extrabold mt-2">Find your corner of innovation</h2><p class="text-slate-500 mt-2">Browse by industry, then explore the companies building in it.</p></div>
+    <a href="{{ url_for('main.search') }}" class="font-semibold text-blue-700 hover:underline">Explore all startups →</a>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+  {% for name in categories[:10] %}
+    <a href="{{ url_for('main.search', category=name) }}" class="lift-card group bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
+      <span class="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform" style="background:{{ category_gradient(name) }}">{{ icon(category_icon(name), 'w-5 h-5') }}</span>
+      <span class="block font-bold text-sm mt-4">{{ name }}</span><span class="block text-xs text-slate-400 mt-1">Explore companies ↗</span>
+    </a>
+  {% endfor %}
+  </div>
+</section>
+<section class="bg-white border-y border-slate-200">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-12 md:py-16">
+    <div class="flex items-end justify-between gap-4 mb-6"><div><p class="text-xs font-bold tracking-[.18em] text-blue-700 uppercase">Products with purpose</p><h2 class="text-2xl md:text-3xl font-extrabold mt-2">Ideas becoming useful things</h2><p class="text-slate-500 mt-2">Explore products built by teams in the network.</p></div><a href="{{ url_for('main.products') }}" class="text-sm font-semibold text-blue-700 whitespace-nowrap">All products →</a></div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">{% for p in featured_products %}{{ product_card(p) }}{% endfor %}</div>
+  </div>
+</section>
+<section class="max-w-7xl mx-auto px-5 sm:px-8 py-12 md:py-16">
+  <div class="rounded-3xl bg-gradient-to-br from-[#0b1c45] via-[#123b86] to-[#2563eb] p-7 md:p-10 text-white relative overflow-hidden">
+    <div class="absolute -right-16 -top-24 w-72 h-72 rounded-full border border-white/20 shadow-[0_0_0_35px_rgba(255,255,255,.04),0_0_0_70px_rgba(255,255,255,.03)]"></div>
+    <div class="relative grid md:grid-cols-[1fr_auto] gap-6 items-center">
+      <div><p class="text-xs tracking-[.18em] uppercase font-bold text-blue-200">Your next chapter</p><h2 class="text-2xl md:text-3xl font-extrabold mt-2">The right connection can change the trajectory.</h2><p class="text-blue-100 mt-3 max-w-2xl leading-relaxed">Founders can share the business behind the idea. Investors can discover teams, review company details, and start a direct conversation when the fit looks right.</p></div>
+      <div class="flex flex-col sm:flex-row md:flex-col gap-3"><a href="{{ url_for('swipe.index') }}" class="text-center rounded-xl bg-white text-blue-900 px-5 py-3 font-bold hover:bg-blue-50">Discover startups</a><a href="{{ url_for('main.investors') }}" class="text-center rounded-xl border border-white/30 px-5 py-3 font-bold hover:bg-white/10">Meet investors</a></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

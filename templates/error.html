@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto px-6 py-24 text-center">
+  <p class="text-5xl font-bold text-brand-blue">{{ code }}</p>
+  <p class="mt-3 text-slate-600">{{ 'That page does not exist.' if code == 404 else ("You do not have access to this page." if code == 403 else 'Something went wrong. Please try again.') }}</p>
+  <a href="{{ url_for('main.home') }}" class="inline-block mt-6 bg-brand-blue text-white font-semibold px-5 py-2 rounded-lg">Back to home</a>
+</div>
+{% endblock %}

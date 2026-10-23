@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import product_image %}
+{% block title %}Products · {{ company.name }}{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-[380px_1fr] gap-8">
+  <form method="post" enctype="multipart/form-data"
+        action="{{ url_for('company.product_edit', pid=product.id) if product else url_for('company.products_manage', slug=company.slug) }}"
+        class="bg-white rounded-xl border border-slate-200 p-6 space-y-4 text-sm h-fit">
+    <div>
+      <p class="text-xs text-slate-500">{{ company.name }}</p>
+      <h1 class="text-xl font-bold">{{ 'Edit product' if product else 'Add a product' }}</h1>
+    </div>
+    <label class="block"><span class="font-semibold">Product name *</span>
+      <input name="name" required value="{{ product.name if product else '' }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+    <label class="block"><span class="font-semibold">Price (₹) *</span>
+      <input name="price" type="number" min="0" required value="{{ product.price if product else '' }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+    <label class="block"><span class="font-semibold">Description</span>
+      <textarea name="description" rows="4" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">{{ product.description if product else '' }}</textarea></label>
+    <label class="block"><span class="font-semibold">Label</span>
+      <select name="badge" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
+        {% for v, l in [('', 'None'), ('New Launch', 'New launch'), ('Bestseller', 'Bestseller')] %}
+          <option value="{{ v }}" {{ 'selected' if product and product.badge == v }}>{{ l }}</option>{% endfor %}
+      </select></label>
+    <label class="block"><span class="font-semibold">Product photo</span>
+      <span class="block text-xs text-slate-500">JPG, PNG or WEBP. Without a photo the product shows its sector icon.</span>
+      <input name="image" type="file" accept="image/png,image/jpeg,image/webp" class="mt-2 block text-sm"></label>
+    <button class="w-full bg-brand-blue text-white font-semibold rounded-lg py-2.5 hover:bg-blue-700">{{ 'Save product' if product else 'Add product' }}</button>
+    {% if product %}<a href="{{ url_for('company.products_manage', slug=company.slug) }}" class="block text-center text-sm font-semibold text-brand-blue">Cancel editing</a>{% endif %}
+  </form>
+
+  <section>
+    <div class="flex items-end justify-between mb-4">
+      <div><h2 class="text-xl font-bold">Products on your page</h2><p class="text-sm text-slate-500">{{ company.products | length }} listed</p></div>
+      <a href="{{ url_for('company.detail', slug=company.slug, tab='products') }}" class="text-sm font-semibold text-brand-blue">View public page</a>
+    </div>
+    <div class="space-y-3">
+      {% for p in company.products %}
+      <div class="bg-white rounded-xl border border-slate-200 p-4 flex gap-4 items-center">
+        <div class="w-24 h-20 rounded-lg overflow-hidden shrink-0 relative">{{ product_image(p, 'h-20') }}</div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold truncate">{{ p.name }}</p>
+          <p class="text-xs text-slate-500">₹{{ p.price | inr }} · {{ p.category }}</p>
+          <p class="text-xs text-slate-500 truncate">{{ p.description }}</p>
+        </div>
+        <div class="flex flex-col gap-2 text-xs shrink-0">
+          <a href="{{ url_for('company.product_edit', pid=p.id) }}" class="border border-slate-300 rounded px-3 py-1.5 text-center font-semibold hover:bg-slate-50">Edit</a>
+          <form method="post" action="{{ url_for('company.product_delete', pid=p.id) }}" onsubmit="return confirm('Delete this product?');">
+            <button class="w-full border border-red-200 text-red-600 rounded px-3 py-1.5 font-semibold hover:bg-red-50">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+        <div class="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">No products yet. Add your first product using the form.</div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

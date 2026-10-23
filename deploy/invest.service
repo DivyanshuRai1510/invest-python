@@ -1,0 +1,16 @@
+# systemd service: keeps INVEST running and restarts it after reboots/crashes.
+# Install: sudo cp deploy/invest.service /etc/systemd/system/ && sudo systemctl enable --now invest
+[Unit]
+Description=INVEST startup platform (gunicorn)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/invest
+EnvironmentFile=/var/www/invest/.env
+ExecStart=/var/www/invest/venv/bin/gunicorn -w 3 -b 127.0.0.1:8000 wsgi:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

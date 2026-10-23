@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import avatar %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-8 space-y-6">
+  <form method="post" enctype="multipart/form-data" class="bg-white rounded-xl border border-slate-200 p-6 space-y-5 text-sm">
+    <h1 class="text-xl font-bold">Profile</h1>
+    <div class="flex items-center gap-5">
+      {{ avatar(current_user, 88) }}
+      <label class="flex-1"><span class="font-semibold">Profile photo</span>
+        <span class="block text-xs text-slate-500">JPG, PNG or WEBP. Without a photo your initials are shown.</span>
+        <input name="avatar" type="file" accept="image/png,image/jpeg,image/webp" class="mt-2 block text-sm"></label>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <label><span class="font-semibold">Full name</span><input name="name" value="{{ current_user.name }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+      <label><span class="font-semibold">Job title</span><input name="title" value="{{ current_user.title or '' }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+      <label><span class="font-semibold">{{ 'Firm' if current_user.role == 'investor' else 'Role in company' }}</span><input name="firm" value="{{ current_user.firm or '' }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+      <label><span class="font-semibold">City</span><input name="location" value="{{ current_user.location or '' }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+    </div>
+    <label class="block"><span class="font-semibold">About you</span><textarea name="bio" rows="3" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">{{ current_user.bio or '' }}</textarea></label>
+    {% if current_user.role == 'investor' %}
+    <div>
+      <p class="font-semibold mb-2">Sectors you invest in</p>
+      <div class="grid sm:grid-cols-3 gap-2">
+        {% for s in sectors %}
+          <label class="flex items-center gap-2"><input type="checkbox" name="sectors" value="{{ s }}" {{ 'checked' if s in current_user.sector_list() }}> {{ s }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <label><span class="font-semibold">Smallest ticket (₹ Cr)</span><input name="ticket_min" type="number" step="0.01" min="0" value="{{ (current_user.ticket_min or 0) / 10000000 }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+      <label><span class="font-semibold">Largest ticket (₹ Cr)</span><input name="ticket_max" type="number" step="0.01" min="0" value="{{ (current_user.ticket_max or 0) / 10000000 }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+    </div>
+    {% endif %}
+    <button class="bg-brand-blue text-white font-semibold rounded-lg px-6 py-2.5 hover:bg-blue-700">Save profile</button>
+  </form>
+
+  <form method="post" class="bg-white rounded-xl border border-slate-200 p-6 space-y-4 text-sm">
+    <input type="hidden" name="action" value="password">
+    <h2 class="font-bold">Change password</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <label><span class="font-semibold">Current password</span><input type="password" name="current_password" required class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+      <label><span class="font-semibold">New password (6+ characters)</span><input type="password" name="new_password" required minlength="6" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"></label>
+    </div>
+    <button class="border border-slate-300 rounded-lg px-5 py-2.5 font-semibold hover:bg-slate-50">Update password</button>
+  </form>
+</div>
+{% endblock %}
