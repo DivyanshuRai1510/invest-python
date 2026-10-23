@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% from "_macros.html" import logo_box, product_card, empty %}
+{% block title %}{{ company.name }}{% endblock %}
+{% block content %}
+<section class="bg-white border-b border-slate-200">
+  <div class="h-36" style="background: {{ category_gradient(company.category) }}"></div>
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="-mt-12 flex flex-wrap items-end justify-between gap-5 pb-5">
+      <div class="flex items-end gap-5">
+        <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">{{ logo_box(company, 96) }}</div>
+        <div class="pb-1">
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl font-extrabold">{{ company.name }}</h1>
+            {% if company.verified %}<span class="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded">Verified</span>{% endif %}
+          </div>
+          <p class="text-slate-600 mt-1">{{ company.tagline }}</p>
+          <p class="text-sm text-slate-500 mt-1">{{ company.category }} · {{ company.location }}{% if company.website %} · {{ company.website }}{% endif %}</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2 pb-1">
+        {% if not current_user.is_authenticated %}
+          <a href="{{ url_for('auth.login', next=request.path) }}" class="px-4 py-2.5 rounded-lg bg-brand-blue text-white font-semibold text-sm">Log in to connect</a>
+        {% elif current_user.role == 'investor' %}
+          <form method="post" action="{{ url_for('company.connect', slug=company.slug) }}">
+            <input type="hidden" name="kind" value="saved">
+            <button class="px-4 py-2.5 rounded-lg text-sm font-semibold border {{ 'bg-amber-50 border-amber-300 text-amber-800' if 'saved' in marks else 'border-slate-300 bg-white hover:bg-slate-50' }}">{{ 'Saved' if 'saved' in marks else 'Save' }}</button>
+          </form>
+          <form method="post" action="{{ url_for('company.connect', slug=company.slug) }}">
+            <input type="hidden" name="kind" value="interested">
+            <button class="px-4 py-2.5 rounded-lg text-sm font-semibold {{ 'bg-green-700 text-white' if 'interested' in marks else 'bg-white border border-green-700 text-green-700 hover:bg-green-50' }}">{{ 'Interest sent' if 'interested' in marks else 'Show interest' }}</button>
+          </form>
+          {% if company.owner %}
+            <a href="{{ url_for('messages.thread', uid=company.owner_id) }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold bg-brand-blue text-white hover:bg-blue-700">Message founder</a>
+          {% endif %}
+        {% elif is_owner %}
+          <a href="{{ url_for('company.edit', slug=company.slug) }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold border border-slate-300 bg-white hover:bg-slate-50">Edit details</a>
+          <a href="{{ url_for('company.sections', slug=company.slug) }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold border border-slate-300 bg-white hover:bg-slate-50">Page sections</a>
+          <a href="{{ url_for('company.products_manage', slug=company.slug) }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold bg-brand-blue text-white hover:bg-blue-700">Manage products</a>
+        {% endif %}
+      </div>
+    </div>
+    <nav class="flex gap-6 overflow-x-auto text-sm border-t border-slate-200">
+      {% for key, label, count in [('overview','Overview',None), ('products','Products',company.products|length), ('documents','Documents',company.documents|length), ('team','Team',None), ('investors','Investors',None)] %}
+        <a href="{{ url_for('company.detail', slug=company.slug, tab=key) }}" class="py-3 whitespace-nowrap font-semibold border-b-2 {{ 'border-brand-blue text-brand-blue' if tab == key else 'border-transparent text-slate-500 hover:text-slate-800' }}">
+          {{ label }}{% if count is not none %} <span class="text-xs text-slate-400">({{ count }})</span>{% endif %}
+        </a>
+      {% endfor %}
+    </nav>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-[1fr_300px] gap-8">
+  <div class="space-y-5">
+    {% if tab == 'overview' %}
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {% for label, value in [('Annual profit', company.annual_profit | crore), ('Market value', company.market_value | crore), ('Revenue', company.revenue | crore), ('Employees', company.employees), ('Growth', (company.growth_percent | round | int) ~ '%')] %}
+          <div class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs text-slate-400">{{ label }}</p><p class="font-bold mt-1">{{ value }}</p></div>
+        {% endfor %}
+      </div>
+      {% for s in overview_sections %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+          <h2 class="font-bold mb-3">{{ s.title }}</h2>
+          {% if s.type == 'highlights' %}
+            <ul class="grid sm:grid-cols-2 gap-2">{% for l in s.lines() %}<li class="flex gap-2 text-sm text-slate-700"><span class="text-green-600">{{ icon('check', 'w-4 h-4 mt-0.5 shrink-0') }}</span>{{ l }}</li>{% endfor %}</ul>
+          {% elif s.type == 'contact' %}
+            <div class="whitespace-pre-line text-sm text-slate-700 leading-relaxed">{{ s.content }}</div>
+          {% else %}
+            <p class="whitespace-pre-line text-slate-600 leading-relaxed">{{ s.content }}</p>
+          {% endif %}
+        </div>
+      {% else %}
+        {{ empty('This page has no sections yet.') }}
+      {% endfor %}
+
+    {% elif tab == 'products' %}
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold">Products by {{ company.name }}</h2>
+        {% if is_owner %}<a href="{{ url_for('company.products_manage', slug=company.slug) }}" class="text-sm font-semibold text-brand-blue">Manage products</a>{% endif %}
+      </div>
+      <div class="grid sm:grid-cols-2 gap-5">
+        {% for p in company.products %}{{ product_card(p) }}{% else %}<div class="sm:col-span-2">{{ empty('No products listed yet.') }}</div>{% endfor %}
+      </div>
+
+    {% elif tab == 'documents' %}
+      <div class="bg-white rounded-xl border border-slate-200 divide-y">
+        {% for d in company.documents %}
+          <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="text-slate-500">{{ icon('file', 'w-5 h-5') }}</span>
+              <div class="min-w-0"><p class="font-semibold truncate">{{ d.name }}</p><p class="text-xs text-slate-400">Uploaded {{ d.uploaded_at.strftime('%d %b %Y') }}</p></div>
+            </div>
+            <div class="flex items-center gap-3 shrink-0">
+              <a href="{{ url_for('static', filename=d.file_path) }}" target="_blank" class="text-brand-blue font-semibold">View</a>
+              <a href="{{ url_for('static', filename=d.file_path) }}" download class="text-brand-blue font-semibold">Download</a>
+              {% if is_owner %}
+              <form method="post" action="{{ url_for('company.delete_document', slug=company.slug, doc_id=d.id) }}" onsubmit="return confirm('Remove this document?');">
+                <button class="text-red-600 font-semibold">Remove</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        {% else %}
+          <p class="px-5 py-6 text-sm text-slate-500">No documents uploaded yet.</p>
+        {% endfor %}
+      </div>
+      {% if documents_section %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+          <h2 class="font-bold mb-3">{{ documents_section.title }}</h2>
+          <ul class="divide-y text-sm">{% for n, d in documents_section.pairs() %}<li class="flex justify-between py-2.5"><span>{{ n }}</span><span class="text-slate-400 text-xs">{{ d }}</span></li>{% endfor %}</ul>
+        </div>
+      {% endif %}
+      {% if is_owner %}<a href="{{ url_for('company.edit', slug=company.slug) }}" class="inline-block text-sm font-semibold text-brand-blue">Upload documents</a>{% endif %}
+
+    {% elif tab == 'team' %}
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <h2 class="font-bold mb-4">Team</h2>
+        {% if team_section %}
+          <div class="grid sm:grid-cols-2 gap-4">
+            {% for n, r in team_section.pairs() %}
+              <div class="border border-slate-200 rounded-lg p-4 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-full bg-navy text-white flex items-center justify-center text-sm font-bold">{{ n[0] }}</span>
+                <div><p class="font-semibold">{{ n }}</p><p class="text-xs text-slate-500">{{ r }}</p></div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-sm text-slate-500">The team has not been added yet.</p>
+        {% endif %}
+      </div>
+
+    {% else %}
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <h2 class="font-bold mb-2">Investor interest</h2>
+        <p class="text-sm text-slate-600">{{ investor_count }} investor{{ '' if investor_count == 1 else 's' }} have shown interest in this company.</p>
+        {% if is_owner %}<a href="{{ url_for('account.dashboard') }}" class="inline-block mt-4 text-sm font-semibold text-brand-blue">See who they are in your dashboard</a>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-5">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm">
+      <h3 class="font-bold mb-3">Company snapshot</h3>
+      <dl class="space-y-2.5">
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Funding stage</dt><dd class="font-semibold text-right">{{ company.funding_stage }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Founded</dt><dd class="font-semibold">{{ company.founded }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Sector</dt><dd class="font-semibold text-right">{{ company.category }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Location</dt><dd class="font-semibold text-right">{{ company.location }}</dd></div>
+      </dl>
+    </div>
+    {% if company.description and company.description != company.tagline %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm text-slate-600 leading-relaxed">{{ company.description }}</div>
+    {% endif %}
+  </aside>
+</section>
+{% endblock %}

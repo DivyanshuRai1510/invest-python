@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import product_card, startup_tile, event_row %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-6 py-14 grid lg:grid-cols-[1.1fr_1fr] gap-12 items-center">
+    <div>
+      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight">Empowering innovation.<br><span class="text-brand-blue">Connecting investment.</span></h1>
+      <p class="mt-5 text-slate-600 text-lg max-w-xl leading-relaxed">Find startups by sector, stage and location, read their products and documents, and talk directly with founders or investors.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="{{ url_for('main.search') }}" class="px-5 py-3 rounded-lg bg-brand-blue text-white font-semibold hover:bg-blue-700">Explore startups</a>
+        <a href="{{ url_for('company.new') }}" class="px-5 py-3 rounded-lg border border-slate-300 font-semibold hover:bg-slate-50">Register your startup</a>
+      </div>
+      <dl class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-slate-200 pt-6">
+        {% for label, val in [('Startups', stats.startups), ('Investors', stats.investors), ('Products', stats.products), ('Events', stats.events)] %}
+          <div><dt class="text-xs text-slate-500">{{ label }}</dt><dd class="text-2xl font-extrabold">{{ val }}</dd></div>
+        {% endfor %}
+      </dl>
+    </div>
+    <div class="grid grid-cols-3 gap-3">
+      {% for name in categories[:9] %}
+        <a href="{{ url_for('main.search', category=name) }}" class="rounded-xl border border-slate-200 p-4 flex flex-col items-center gap-2 text-center hover:shadow-md transition">
+          <span class="w-11 h-11 rounded-lg flex items-center justify-center text-white" style="background: {{ category_gradient(name) }}">{{ icon(category_icon(name), 'w-5 h-5') }}</span>
+          <span class="text-xs font-semibold leading-tight">{{ name }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 py-12">
+  <div class="flex items-end justify-between mb-6">
+    <div><h2 class="text-2xl font-bold">Browse by sector</h2><p class="text-sm text-slate-500 mt-1">{{ categories | length }} sectors, 25 sample companies in each.</p></div>
+    <a href="{{ url_for('main.search') }}" class="text-sm font-semibold text-brand-blue hover:underline">All startups</a>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+    {% for name in categories %}
+      <a href="{{ url_for('main.search', category=name) }}" class="bg-white border border-slate-200 rounded-lg px-4 py-3 flex items-center gap-3 hover:border-brand-blue">
+        <span class="text-slate-600">{{ icon(category_icon(name), 'w-5 h-5') }}</span>
+        <span class="text-sm font-semibold">{{ name }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 pb-12">
+  <div class="flex items-end justify-between mb-6">
+    <div><h2 class="text-2xl font-bold">Featured products</h2><p class="text-sm text-slate-500 mt-1">Bestsellers and new launches from our startups.</p></div>
+    <a href="{{ url_for('main.products') }}" class="text-sm font-semibold text-brand-blue hover:underline">All products</a>
+  </div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    {% for p in featured_products %}{{ product_card(p) }}{% endfor %}
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 pb-16 grid lg:grid-cols-[1fr_320px] gap-8">
+  <div>
+    <div class="flex items-end justify-between mb-6">
+      <h2 class="text-2xl font-bold">Largest startups by market value</h2>
+      <a href="{{ url_for('main.search', sort='value') }}" class="text-sm font-semibold text-brand-blue hover:underline">See ranking</a>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-5">{% for c in featured_companies %}{{ startup_tile(c) }}{% endfor %}</div>
+  </div>
+  <aside class="space-y-5">
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+      <div class="flex items-center justify-between mb-4"><h3 class="font-bold">Upcoming events</h3>
+        <a href="{{ url_for('main.events') }}" class="text-xs font-semibold text-brand-blue">View all</a></div>
+      <div class="space-y-4">{% for e in events %}{{ event_row(e) }}{% endfor %}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+      <h3 class="font-bold">Tinder of startups</h3>
+      <p class="text-sm text-slate-600 mt-2 leading-relaxed">Review startups one at a time. Pass, save or show interest, and open any company page from its card.</p>
+      <a href="{{ url_for('swipe.index') }}" class="inline-block mt-4 text-sm font-semibold bg-navy text-white px-4 py-2 rounded-lg">Open</a>
+    </div>
+  </aside>
+</section>
+{% endblock %}
